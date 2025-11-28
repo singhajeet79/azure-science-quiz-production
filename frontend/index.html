@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Science Quiz — Grades 6–8</title>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    button { padding: 10px 14px; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Science Quiz (10 Questions)</h1>
+
+  <div id="intro" class="card">
+    <p>Enter your school code and roll number to start the test.</p>
+    <label>School code: <input id="school" /></label><br><br>
+    <label>Roll number: <input id="student" /></label><br><br>
+    <label>Grade:
+      <select id="grade">
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8" selected>8</option>
+      </select>
+    </label>
+    <br><br>
+    <button id="start">Start Test</button>
+  </div>
+
+  <div id="quiz" style="display:none;">
+    <div id="questions"></div>
+    <div style="margin-top:12px;">
+      <button id="submit">Submit Answers</button>
+    </div>
+  </div>
+
+  <div id="result" style="display:none;" class="card"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
