@@ -5,15 +5,31 @@ from datetime import datetime
 from azure.data.tables import TableClient
 from typing import Dict, Any
 
-# Table name (create a table named 'QuizResponses' in your storage account)
 TABLE_NAME = os.getenv("AZURE_TABLE_NAME", "QuizResponses")
-# Connection string should be set in Function App settings (do NOT hardcode)
 CONNECTION_STRING = os.getenv("AZURE_TABLE_CONN", "")
 
-def score_answers(answers, correct):
+# 🔥 Move correct answers into environment variable or embed here
+CORRECT = ["c", "a", "b", "d", "a", "c", "b", "d", "a", "c"]  # <-- REPLACE WITH YOUR REAL ANSWERS
+
+def normalize_answers(answers):
+    """
+    Convert dict → ordered list of answers.
+    Expected keys: q1, q2, ... q10
+    """
+    if isinstance(answers, dict):
+        out = []
+        for i in range(1, 11):  # 10 questions
+            out.append(answers.get(f"q{i}", "").lower())
+        return out
+    elif isinstance(answers, list):
+        return [str(a).lower() for a in answers]
+    else:
+        return []
+
+def score_answers(student_ans, correct_ans):
     score = 0
-    for i in range(min(len(answers), len(correct))):
-        if answers[i] is not None and answers[i] == correct[i]:
+    for s, c in zip(student_ans, correct_ans):
+        if s == c:
             score += 1
     return score
 
@@ -30,25 +46,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     session_token = body.get("sessionToken")
     student = body.get("student")
     school = body.get("school")
-    answers = body.get("answers", [])
+    answers = body.get("answers", {})
 
-    # Load correct answers from a small embedded file in Function app (questions.json)
-    try:
-        func_dir = os.path.dirname(__file__)
-        qpath = os.path.join(func_dir, "..", "..", "frontend", "questions.json")
-        with open(qpath, "r") as fh:
-            qdata = json.load(fh)
-        correct = qdata.get("answers", [])
-    except Exception as e:
-        logging.warning("Could not load questions for scoring: %s", e)
-        correct = []
+    # 🔥 Normalize structure before scoring
+    answers_list = normalize_answers(answers)
 
-    score = score_answers(answers, correct)
+    # 🔥 Score
+    score = score_answers(answers_list, CORRECT)
 
     attempt_id = str(uuid.uuid4())
     timestamp = datetime.utcnow().isoformat()
 
-    # Store result in Table Storage
+    # Store
     try:
         table_client = TableClient.from_connection_string(CONNECTION_STRING, table_name=TABLE_NAME)
         entity = {
@@ -57,7 +66,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "student": student or "unknown",
             "sessionToken": session_token,
             "timestamp": timestamp,
-            "answers": json.dumps(answers),
+            "answers": json.dumps(answers_list),
             "score": score
         }
         table_client.create_entity(entity)
