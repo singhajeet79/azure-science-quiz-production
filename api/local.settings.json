@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    // Use Azurite
+    "AZURE_TABLE_CONN": "UseDevelopmentStorage=true;",
+    "AZURE_TABLE_NAME": "QuizResponses",
+
+    // 10 correct answers (change if needed)
+    "CORRECT_ANSWERS": "1,0,0,3,1,1,3,2,2,3"
+  }
+}
