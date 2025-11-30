@@ -1,4 +1,4 @@
-// Frontend logic: loads questions.json, starts session locally and submits answers to /api/submit.
+// Frontend logic: loads questions.json, starts session locally and submits answers to /api/submit
 const apiBase = "/api/SubmitFunction";
 
 let questions = [];
@@ -39,13 +39,13 @@ document.getElementById('start').addEventListener('click', async () => {
   }
 
   if (!schoolRegex.test(school)) {
-    alert('Invalid School Code!');
+    alert('Invalid School Code. It must be 3 uppercase city letters followed by 3 digits (e.g., BLR123).');
     return;
   }
 
   // First, check if it's 3 digits
   if (!studentRegex.test(student)) {
-    alert('Invalid Roll Number!');
+    alert('Invalid Roll Number. It must be exactly 3 digits (e.g., 001 or 999).');
     return;
   }
   
@@ -103,5 +103,8 @@ document.getElementById('submit').addEventListener('click', async () => {
   document.getElementById('quiz').style.display = 'none';
   const rdiv = document.getElementById('result');
   rdiv.style.display = 'block';
-  rdiv.innerHTML = `<h3>Submitted</h3><p>Score (server-calculated): ${out.score} / ${questions.length}</p><p>AttemptId: ${out.attemptId}</p>`;
+  
+  // --- START: UPDATED RESULT RENDERING ---
+  rdiv.innerHTML = `<h3>Submitted</h3><p>Score: ${out.score} / ${questions.length}</p>`;
+  // --- END: UPDATED RESULT RENDERING ---
 });
