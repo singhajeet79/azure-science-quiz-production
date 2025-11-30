@@ -27,7 +27,7 @@ document.getElementById('start').addEventListener('click', async () => {
   const school = document.getElementById('school').value.trim();
   const student = document.getElementById('student').value.trim();
   
-  // --- Validation Logic (Start Test) ---
+  // --- START: Validation Logic (Start Test) ---
   const schoolRegex = /^[A-Z]{3}\d{3}$/; 
   const studentRegex = /^\d{3}$/; 
 
@@ -51,7 +51,7 @@ document.getElementById('start').addEventListener('click', async () => {
     alert('Invalid Roll Number. The roll number cannot be 000.');
     return;
   }
-  // ---------------------------
+  // --- END: Validation Logic (Start Test) ---
 
   sessionToken = `${school}#${student}#${Date.now()}`;
   await loadQuestions();
@@ -69,7 +69,10 @@ document.getElementById('submit').addEventListener('click', async () => {
   for(let i=0;i<questions.length;i++){
     const radios = document.getElementsByName('q'+i);
     let sel = null;
-    radios.forEach(r => { if(r.checked) sel = Number(r.value); });
+    
+    radios.forEach(r => { 
+      if(r.checked) sel = Number(r.value); // Convert string value to number
+    });
     
     // Check if an answer was selected
     if (sel !== null) {
@@ -79,10 +82,10 @@ document.getElementById('submit').addEventListener('click', async () => {
     answers.push(sel);
   }
   
-  // --- New Check: Ensure at least one question was attempted ---
+  // Check: Ensure at least one question was attempted
   if (attemptedCount === 0) {
     alert('You must attempt at least one question before submitting the test.');
-    return; // Stop the submission process
+    return; 
   }
   
   // Add lightweight client-side jitter to reduce burst risk
@@ -95,6 +98,8 @@ document.getElementById('submit').addEventListener('click', async () => {
     grade: document.getElementById('grade').value,
     answers
   };
+  
+  console.log('Submission Payload:', payload); // Debugging line for server issue
 
   const res = await fetch(apiBase, {
     method: 'POST',
