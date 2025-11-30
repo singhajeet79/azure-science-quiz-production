@@ -27,9 +27,11 @@ document.getElementById('start').addEventListener('click', async () => {
   const school = document.getElementById('school').value.trim();
   const student = document.getElementById('student').value.trim();
   
-  // --- New Validation Logic ---
-  const schoolRegex = /^[A-Z]{3}\d{3}$/; // 3 uppercase letters + 3 digits (e.g., BLR123)
-  const studentRegex = /^\d{4}$/;      // Exactly 4 digits (0000-9999)
+  // --- Validation Logic ---
+  // 1. School Code: 3 uppercase letters + 3 digits (e.g., BLR123)
+  const schoolRegex = /^[A-Z]{3}\d{3}$/; 
+  // 2. Roll Number: Exactly 3 digits (000-999 format check)
+  const studentRegex = /^\d{3}$/; 
 
   if(!school || !student){
     alert('Enter school code and roll number.');
@@ -37,16 +39,26 @@ document.getElementById('start').addEventListener('click', async () => {
   }
 
   if (!schoolRegex.test(school)) {
-    alert('Invalid School Code. It must be 3 uppercase city letters followed by 3 digits (e.g., BLR123).');
+    alert('Invalid School Code!');
     return;
   }
 
+  // First, check if it's 3 digits
   if (!studentRegex.test(student)) {
-    alert('Invalid Roll Number. It must be exactly 4 digits (e.g., 0123 or 0000).');
+    alert('Invalid Roll Number!');
+    return;
+  }
+  
+  // Second, check the value to ensure it's not 000
+  // parseInt treats '000', '001', '999' as 0, 1, and 999 respectively.
+  const rollNumber = parseInt(student, 10);
+  if (rollNumber === 0) {
+    alert('Invalid Roll Number. The roll number cannot be 000.');
     return;
   }
   // ---------------------------
 
+  // Validation passed, proceed with starting the test
   // Local "session token" (simple); production: use issuer token from API
   sessionToken = `${school}#${student}#${Date.now()}`;
   await loadQuestions();
