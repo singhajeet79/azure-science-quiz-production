@@ -1,4 +1,4 @@
-// Frontend logic: loads questions.json, starts session locally and submits answers to /api/submit
+// Frontend logic: loads questions.json, starts session locally and submits answers to /api/submit.
 const apiBase = "/api/SubmitFunction";
 
 let questions = [];
