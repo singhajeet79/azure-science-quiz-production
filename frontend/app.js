@@ -27,10 +27,8 @@ document.getElementById('start').addEventListener('click', async () => {
   const school = document.getElementById('school').value.trim();
   const student = document.getElementById('student').value.trim();
   
-  // --- Validation Logic ---
-  // 1. School Code: 3 uppercase letters + 3 digits (e.g., BLR123)
+  // --- Validation Logic (Start Test) ---
   const schoolRegex = /^[A-Z]{3}\d{3}$/; 
-  // 2. Roll Number: Exactly 3 digits (000-999 format check)
   const studentRegex = /^\d{3}$/; 
 
   if(!school || !student){
@@ -43,14 +41,11 @@ document.getElementById('start').addEventListener('click', async () => {
     return;
   }
 
-  // First, check if it's 3 digits
   if (!studentRegex.test(student)) {
     alert('Invalid Roll Number. It must be exactly 3 digits (e.g., 001 or 999).');
     return;
   }
   
-  // Second, check the value to ensure it's not 000
-  // parseInt treats '000', '001', '999' as 0, 1, and 999 respectively.
   const rollNumber = parseInt(student, 10);
   if (rollNumber === 0) {
     alert('Invalid Roll Number. The roll number cannot be 000.');
@@ -58,8 +53,6 @@ document.getElementById('start').addEventListener('click', async () => {
   }
   // ---------------------------
 
-  // Validation passed, proceed with starting the test
-  // Local "session token" (simple); production: use issuer token from API
   sessionToken = `${school}#${student}#${Date.now()}`;
   await loadQuestions();
   renderQuestions();
@@ -69,14 +62,29 @@ document.getElementById('start').addEventListener('click', async () => {
 
 document.getElementById('submit').addEventListener('click', async () => {
   if(!sessionToken){ alert('Start test first'); return; }
+  
   const answers = [];
+  let attemptedCount = 0; 
+  
   for(let i=0;i<questions.length;i++){
     const radios = document.getElementsByName('q'+i);
     let sel = null;
     radios.forEach(r => { if(r.checked) sel = Number(r.value); });
+    
+    // Check if an answer was selected
+    if (sel !== null) {
+      attemptedCount++; 
+    }
+    
     answers.push(sel);
   }
-
+  
+  // --- New Check: Ensure at least one question was attempted ---
+  if (attemptedCount === 0) {
+    alert('You must attempt at least one question before submitting the test.');
+    return; // Stop the submission process
+  }
+  
   // Add lightweight client-side jitter to reduce burst risk
   await new Promise(res => setTimeout(res, Math.floor(Math.random()*8000)));
 
@@ -104,7 +112,6 @@ document.getElementById('submit').addEventListener('click', async () => {
   const rdiv = document.getElementById('result');
   rdiv.style.display = 'block';
   
-  // --- START: UPDATED RESULT RENDERING ---
-  rdiv.innerHTML = `<h3>Submitted</h3><p>Score: ${out.score} / ${questions.length}</p>`;
-  // --- END: UPDATED RESULT RENDERING ---
+  // Display Score: Correct Answers / Attempted Questions
+  rdiv.innerHTML = `<h3>Submitted</h3><p>Score: ${out.score} / ${attemptedCount}</p>`;
 });
