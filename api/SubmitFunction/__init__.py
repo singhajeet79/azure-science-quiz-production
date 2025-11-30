@@ -8,28 +8,48 @@ from typing import Dict, Any
 TABLE_NAME = os.getenv("AZURE_TABLE_NAME", "QuizResponses")
 CONNECTION_STRING = os.getenv("AZURE_TABLE_CONN", "")
 
-# 🔥 Move correct answers into environment variable or embed here
-CORRECT = ["c", "a", "b", "d", "a", "c", "b", "d", "a", "c"]  # <-- REPLACE WITH YOUR REAL ANSWERS
+# 🔥 Master Answer Key (using lowercase letters a, b, c, d)
+CORRECT = ["c", "a", "b", "d", "a", "c", "b", "d", "a", "c"] 
+
+# Map the frontend numeric index (0, 1, 2, 3) to the letter key (a, b, c, d)
+INDEX_TO_LETTER = {
+    "0": "a",
+    "1": "b",
+    "2": "c",
+    "3": "d"
+}
 
 def normalize_answers(answers):
     """
-    Convert dict → ordered list of answers.
-    Expected keys: q1, q2, ... q10
+    Converts student submission into an ordered list of letter answers (a, b, c, d).
+    Handles both dict (q1:c) and list (0, 2, 1, null) formats.
     """
+    out = []
+    
     if isinstance(answers, dict):
-        out = []
-        for i in range(1, 11):  # 10 questions
+        # Handles the old format (q1: c, q2: a, ...)
+        for i in range(1, 11): 
             out.append(answers.get(f"q{i}", "").lower())
-        return out
+    
     elif isinstance(answers, list):
-        return [str(a).lower() for a in answers]
-    else:
-        return []
+        # Handles the current frontend format (0, 2, 1, null, ...)
+        for answer_index in answers:
+            if answer_index is None:
+                # Append an empty string or None for unattempted questions
+                out.append(None)
+            else:
+                # Map the string index ("0", "1", "2") to the letter key ("a", "b", "c")
+                # and convert to lowercase for comparison.
+                mapped_answer = INDEX_TO_LETTER.get(str(answer_index), '')
+                out.append(mapped_answer.lower())
+    
+    return out
 
 def score_answers(student_ans, correct_ans):
     score = 0
     for s, c in zip(student_ans, correct_ans):
-        if s == c:
+        # Need to handle None submissions from normalize_answers
+        if s is not None and s == c:
             score += 1
     return score
 
@@ -46,9 +66,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     session_token = body.get("sessionToken")
     student = body.get("student")
     school = body.get("school")
-    answers = body.get("answers", {})
+    # Answers is now a list of strings/nulls from the frontend
+    answers = body.get("answers", []) 
 
-    # 🔥 Normalize structure before scoring
+    # 🔥 Normalize structure: Maps ["0", "2", ...] to ["a", "c", ...]
     answers_list = normalize_answers(answers)
 
     # 🔥 Score
@@ -66,7 +87,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "student": student or "unknown",
             "sessionToken": session_token,
             "timestamp": timestamp,
-            "answers": json.dumps(answers_list),
+            "answers": json.dumps(answers_list), # Stores the final letter answers
             "score": score
         }
         table_client.create_entity(entity)
