@@ -1,0 +1,36 @@
+# ------------------------------------
+# 1. Terraform Exclusions
+# ------------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Sensitive files for local runs (e.g., local credentials for Azure)
+.azure/
+.secrets/
+
+# ------------------------------------
+# 2. Python / Azure Functions Exclusions
+# ------------------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.o
+*.so
+host.json
+local.settings.json
+
+# ------------------------------------
+# 3. Frontend / Node Exclusions (If using Node tools like npm/webpack)
+# ------------------------------------
+node_modules/
+/dist/
+/build/
+
+# IDE/Editor Exclusions
+.vscode/
+.idea/
+*~

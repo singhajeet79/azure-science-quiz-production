@@ -1,6 +1,5 @@
 // Frontend logic: loads questions.json, starts session locally and submits answers to /api/submit
-const apiBase = "/api/SubmitFunction";
-
+const apiBase = "https://azurequizprod-api.azurewebsites.net/api/SubmitFunction";
 let questions = [];
 let sessionToken = null;
 
